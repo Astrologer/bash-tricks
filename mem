@@ -1,0 +1,27 @@
+#!/bin/bash
+
+COMMANDS_FILE=~/.note
+
+if [ ! -f $COMMANDS_FILE ]; then
+   > $COMMANDS_FILE
+fi
+
+if [ $# -eq 0 ]; then
+   cat -n $COMMANDS_FILE
+   exit
+fi
+
+if [ "$1" == "-h" -o "$1" == "--help" ]; then
+   echo "Usage: `basename $0` [COMMAND_NUM | \"NEW_COMMAND\"]"
+   exit
+fi
+
+echo $1 | grep -q "^[0-9]\+$"
+if [ $? -eq 0 ]; then
+   cmd=$(cat -n $COMMANDS_FILE | grep "^\s*\<$1\>" | gsed s/^\\s*$1\\s*//)
+   shift
+   echo $cmd $* 
+   eval "$cmd" $*
+else 
+   echo $1 >> $COMMANDS_FILE
+fi

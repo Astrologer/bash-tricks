@@ -27,7 +27,6 @@ cat > $VPN_SCRIPT << EOF
 echo -en "\$user\n\$password\n\$code\n" | openvpn --route-noexec --config $VPN_CONFIG > \$VPN_LOG
 EOF
 
-
 daemon -U $VPN_SCRIPT
 
 (tail -f $VPN_LOG & echo $!> $PID_TAIL)| timeout 30 grep -q "Initialization Sequence Completed"
@@ -53,11 +52,11 @@ if [ ! `ip netns list | grep vpn` ]; then
 fi
 
 iptables -t nat -A POSTROUTING -o $device -j MASQUERADE
+ip route flush table $ROUTE_TABLE
 ip route add default via $gateway dev $device table $ROUTE_TABLE
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
 ip netns exec vpn sudo -u "#$SUDO_UID" -g "#$SUDO_GID" bash
-export PS1=(vpn)$PS1
 
 rm -f $VPN_LOG
 rm -f $VPN_SCRIPT
